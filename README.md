@@ -1,18 +1,13 @@
-[![Build Status](https://travis-ci.org/WebAssembly/spec.svg?branch=master)](https://travis-ci.org/WebAssembly/spec)
+# WebAssembly BigInt<->i64 conversion in JS API
 
-# spec
+With the changes in this repository, BigInts have support for bidirectionally converting
+to 64-bit integer WebAssembly values, which appears as
+- Parameters and return values to exported WebAssembly functions
+- Parameters and return values to host functions
+- Imported and exported globals
 
-This repository holds the sources for the WebAssembly draft specification
-(to seed a future
-[WebAssembly Working Group](https://lists.w3.org/Archives/Public/public-new-work/2017Jun/0005.html)),
-a reference implementation, and the official testsuite.
-
-A formatted version of the spec is available here:
-[webassembly.github.io/spec](https://webassembly.github.io/spec/),
-
-Participation is welcome. Discussions about new features, significant semantic
-changes, or any specification change likely to generate substantial discussion
-should take place in
-[the WebAssembly design repository](https://github.com/WebAssembly/design)
-first, so that this spec repository can remain focused. And please follow the
-[guidelines for contributing](Contributing.md).
+BigInts can be read or written from WebAssembly memory using the
+BigInt proposal's BigInt64Array or BigUint64Array; no additional
+support is needed.
+    
+[Design issue](https://github.com/WebAssembly/design/issues/1186)
