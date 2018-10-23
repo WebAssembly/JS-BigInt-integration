@@ -20,6 +20,12 @@ Prepare For TR: true
     "title": "WebAssembly Core Specification",
     "publisher": "W3C WebAssembly Community Group",
     "status": "Draft"
+  },
+  "BIGINT": {
+    "href": "https://tc39.github.io/proposal-bigint/",
+    "title": "BigInt Specification",
+    "publisher": "TC39",
+    "status": "Stage 3 proposal"
   }
 }
 </pre>
@@ -165,6 +171,10 @@ urlPrefix: https://webassembly.github.io/spec/core/; spec: WebAssembly; type: df
     text: current frame; url: exec/conventions.html#exec-notation-textual
     text: 𝗆𝗈𝖽𝗎𝗅𝖾; url: exec/runtime.html#syntax-frame
     text: 𝗆𝖾𝗆𝖺𝖽𝖽𝗋𝗌; url: exec/runtime.html#syntax-moduleinst
+    text: signed_64; url: exec/numerics.html#aux-signed
+urlPrefix: https://tc39.github.io/proposal-bigint/; spec: BIGINT; type: dfn
+    text: ToBigInt64; url: #sec-to-big-int64
+    text: BigInt; url: #sec-ecmascript-language-types-bigint-type
 </pre>
 
 <pre class='link-defaults'>
@@ -334,17 +344,12 @@ A {{Module}} object represents a single WebAssembly module. Each {{Module}} obje
                 1. Let |index| be the number of external functions in |imports|. This value |index| is known as the <dfn>index of the host function</dfn> |funcaddr|.
             1. Let |externfunc| be the [=external value=] [=external value|𝖿𝗎𝗇𝖼=] |funcaddr|.
             1. [=Append=] |externfunc| to |imports|.
-        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] <var ignore>mut</var> |valtype|,
-            1. If [=Type=](|v|) is [=Number=],
-                1. If |valtype| is [=𝗂𝟨𝟦=], throw a {{LinkError}} exception.
-                1. Let |value| be [=ToWebAssemblyValue=](|v|, |valtype|)
-                1. Let |store| be the [=surrounding agent=]'s [=associated store=].
-                1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, [=const=] |valtype|, |value|).
-                1. Set the [=surrounding agent=]'s [=associated store=] to |store|.
-            1. If |v| is a {{Global}} instance,
-                1. Let |globaladdr| be |v|.\[[Global]]
-            1. Otherwise,
-                1. Throw a {{LinkError}} exception.
+        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |valtype|,
+            1. Let |value| be [=ToWebAssemblyValue=](|v|, |globaltype|.<em>[=global type|valtype=]</em>)
+            1. Assert: |globaltype|.<em>[=global type|mut=]</em> is [=global type|𝖼𝗈𝗇𝗌𝗍=], as verified by WebAssembly validation.
+            1. Let |store| be the [=surrounding agent=]'s [=associated store=].
+            1. Let (|store|, |globaladdr|) be [=alloc_global=](|store|, |globaltype|, |value|).
+            1. Set the [=surrounding agent=]'s [=associated store=] to |store|.
             1. Let |externglobal| be [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr|.
             1. [=Append=] |externglobal| to |imports|.
         1. If |externtype| is of the form [=𝗆𝖾𝗆=] |memtype|,
@@ -376,7 +381,8 @@ A {{Module}} object represents a single WebAssembly module. Each {{Module}} obje
             1. Let [=external value|𝖿𝗎𝗇𝖼=] |funcaddr| be |externval|.
             1. Let |func| be the result of creating [=a new Exported Function=] from |funcaddr|.
             1. Let |value| be |func|.
-        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] <var ignore>globaltype</var>,
+        1. If |externtype| is of the form [=𝗀𝗅𝗈𝖻𝖺𝗅=] |globaltype|,
+            1. Assert: |globaltype|.<em>[=global type|mut=]</em> is [=global type|𝖼𝗈𝗇𝗌𝗍=], as verified by WebAssembly validation.
             1. Assert: |externval| is of the form [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr|.
             1. Let [=external value|𝗀𝗅𝗈𝖻𝖺𝗅=] |globaladdr| be |externval|.
             1. Let |global| be [=create a global object|a new Global object=] created from |globaladdr|.
@@ -875,10 +881,6 @@ This slot holds a [=function address=] relative to the [=surrounding agent=]'s [
     1. Let |store| be the [=surrounding agent=]'s [=associated store=].
     1. Let |functype| be [=type_func=](|store|, |funcaddr|).
     1. Let [|parameters|] → [|results|] be |functype|.
-    1. If |parameters| or |results| contains an [=𝗂𝟨𝟦=], throw a {{TypeError}}.
-
-        Note: the above error is thrown each time the \[[Call]] method is invoked.
-
     5. Let |args| be an empty list of WebAssembly values.
     1. Let |i| be 0.
     1. For each type |t| of |parameters|,
@@ -901,7 +903,6 @@ Note: Exported Functions do not have a \[[Construct]] method and thus it is not 
   To <dfn>create a host function</dfn> from the JavaScript object |func|, perform the following steps:
 
     1. Let |hostfunc| be a [=host function=] which performs the following steps when called:
-        1. If the signature contains an [=𝗂𝟨𝟦=] (as argument or result), the host function throws a {{TypeError}} when called.
         1. Let |arguments| be a [=list=] of the arguments of the invocation of this function.
         1. Let |jsArguments| be an empty [=list=].
         1. For each |arg| in |arguments|,
@@ -919,7 +920,9 @@ Note: Exported Functions do not have a \[[Construct]] method and thus it is not 
 <div algorithm>
 The algorithm <dfn>ToJSValue</dfn>(|w|) coerces a [=WebAssembly value=] to a JavaScript value performs the following steps:
 
-1. Assert: |w| is not of the form [=𝗂𝟨𝟦.𝖼𝗈𝗇𝗌𝗍=] <var ignore>i64</var>.
+1. If |w| is of the form [=𝗂𝟨𝟦.𝖼𝗈𝗇𝗌𝗍=] |i64|,
+    1. Let |v| be [=signed_64=](|i64|).
+    1. Return a [=BigInt=] representing the mathematical value |v|.
 1. If |w| is of the form [=𝗂𝟥𝟤.𝖼𝗈𝗇𝗌𝗍=] |i32|, return [=the Number value=] for [=signed_32=](|i32|).
 1. If |w| is of the form [=𝖿𝟥𝟤.𝖼𝗈𝗇𝗌𝗍=] |f32|, return [=the Number value=] for |f32|.
 1. If |w| is of the form [=𝖿𝟨𝟦.𝖼𝗈𝗇𝗌𝗍=] |f64|, return [=the Number value=] for |f64|.
@@ -933,7 +936,9 @@ Note: Number values which are equal to NaN may have various observable NaN paylo
 The algorithm <dfn>ToWebAssemblyValue</dfn>(|v|, |type|) coerce a JavaScript value to a [=WebAssembly value=]  performs the following steps:
 
 
-1. Assert: |type| is not [=𝗂𝟨𝟦=].
+1. If |type| is [=𝗂𝟨𝟦=],
+    1. Let |i64| be [=ToBigInt64=](|v|).
+    1. Return [=𝗂𝟨𝟦.𝖼𝗈𝗇𝗌𝗍=] |i64|.
 1. If |type| is [=𝗂𝟥𝟤=],
     1. Let |i32| be ? [=ToInt32=](|v|).
     1. Return [=𝗂𝟥𝟤.𝖼𝗈𝗇𝗌𝗍=] |i32|.
