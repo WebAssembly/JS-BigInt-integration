@@ -75,10 +75,12 @@ for (const type of ["i32", "f32", "f64"]) {
 test(() => {
   const argument = { "value": "i64", "mutable": true };
   const global = new WebAssembly.Global(argument);
-  assert_throws(new TypeError(), () => global.value);
-  assert_throws(new TypeError(), () => global.value = 0);
-  assert_throws(new TypeError(), () => global.valueOf());
-}, "i64 with default");
+
+  assert_equals(global.value, 0n, "initial value using ToJSValue");
+
+  global.value = 123n;
+  assert_equals(global.valueOf(), 123n, "post-set valueOf");
+}, "i64 mutability");
 
 
 test(() => {

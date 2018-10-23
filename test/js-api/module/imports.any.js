@@ -124,3 +124,34 @@ test(() => {
   const imports = WebAssembly.Module.imports(module, {});
   assert_imports(imports, []);
 }, "Stray argument");
+
+test(() => {
+  const exportingModuleImportingLongFn = (() => {
+      const builder = new WasmModuleBuilder();
+
+      const fnIndex = builder.addImport('mod', 'fn', kSig_l_l);
+      const globalIndex = builder.addImportedGlobal('mod', 'gl', kWasmI64);
+
+      builder.addExport('fn', fnIndex)
+      builder.addExportOfKind('gl', kExternalGlobal, globalIndex)
+
+      return builder.toBuffer();
+  })();
+
+  const module = new WebAssembly.Module(exportingModuleImportingLongFn);
+  const input;
+  const instance = new WebAssembly.Instance(module, {
+    mod: {
+      fn(arg) {
+        input = arg;
+        return 2n ** 63n;
+      },
+      gl: 2n ** 63n,
+    }
+  });
+
+  const output = instance.exports.fn(2n ** 63n);
+  assert_equals(input, - (2n ** 63n));
+  assert_equals(output, - (2n ** 63n));
+  assert_equals(instance.exports.gl, - (2n ** 63n));
+}, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in host functions");
