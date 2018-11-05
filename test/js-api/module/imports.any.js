@@ -139,7 +139,7 @@ test(() => {
   })();
 
   const module = new WebAssembly.Module(exportingModuleImportingLongFn);
-  const input;
+  let input;
   const instance = new WebAssembly.Instance(module, {
     mod: {
       fn(arg) {
