@@ -12,7 +12,5 @@ test(() => {
 
   var module = builder.instantiate();
 
-  assert_throws(new TypeError(), () => module.exports.id(123n));
+  assert_throws(new TypeError(), () => module.exports.f(123n));
 }, "passing BigInt where ToWebAssemblyValue don't expect it should throw");
-
-
