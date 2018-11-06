@@ -126,32 +126,50 @@ test(() => {
 }, "Stray argument");
 
 test(() => {
-  const exportingModuleImportingLongFn = (() => {
-      const builder = new WasmModuleBuilder();
+  const builder = new WasmModuleBuilder();
 
-      const fnIndex = builder.addImport('mod', 'fn', kSig_l_l);
-      const globalIndex = builder.addImportedGlobal('mod', 'gl', kWasmI64);
+  const a_global_index = builder
+    .addImportedGlobal("mod", "a", kWasmI64)
 
-      builder.addExport('fn', fnIndex)
-      builder.addExportOfKind('gl', kExternalGlobal, globalIndex)
+  const b_global_index = builder
+    .addImportedGlobal("mod", "b", kWasmI64);
 
-      return builder.toBuffer();
-  })();
+  builder
+    .addExportOfKind('a', kExternalGlobal, a_global_index)
+    .addExportOfKind('b', kExternalGlobal, b_global_index);
 
-  const module = new WebAssembly.Module(exportingModuleImportingLongFn);
-  let input;
-  const instance = new WebAssembly.Instance(module, {
+  const module = builder.instantiate({
     mod: {
-      fn(arg) {
-        input = arg;
-        return 2n ** 63n;
-      },
-      gl: 2n ** 63n,
+      a: 1n,
+      b: 2n ** 63n,
     }
   });
 
-  const output = instance.exports.fn(2n ** 63n);
-  assert_equals(input, - (2n ** 63n));
-  assert_equals(output, - (2n ** 63n));
-  assert_equals(instance.exports.gl, - (2n ** 63n));
-}, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in host functions");
+  assert_equals(module.exports.a.value, 1n);
+  assert_equals(module.exports.b.value, - (2n ** 63n));
+}, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 for Global");
+
+test(() => {
+  const builder = new WasmModuleBuilder();
+
+  builder
+    .addImport("a", "a", kSig_v_l) // i64 -> ()
+
+  const func = builder
+    .addFunction("", kSig_v_v) // () -> ()
+    .addBody([
+      kExprI64Const, 0x1,
+      kExprCallFunction, 0
+    ]);
+
+  builder.addStart(func.index);
+
+  builder.instantiate({
+    a: {
+      a(param) {
+        assert_equals(x.constructor, BigInt);
+        assert_equals(param, 1n);
+      },
+    }
+  });
+}, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in host function");
