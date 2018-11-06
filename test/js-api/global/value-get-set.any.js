@@ -111,3 +111,10 @@ test(() => {
   assert_equals(setter.call(global, 1, {}), undefined);
   assert_equals(global.value, 1);
 }, "Stray argument");
+
+test(() => {
+  const argument = { "value": "i64", "mutable": true };
+  const global = new WebAssembly.Global(argument);
+
+  assert_throws(new TypeError(), () => global.value = 1);
+}, "passing BigInt where ToJSValue don't expect it should throw");
