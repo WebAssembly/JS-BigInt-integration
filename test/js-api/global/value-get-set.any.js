@@ -80,6 +80,9 @@ test(() => {
 
   global.value = 123n;
   assert_equals(global.valueOf(), 123n, "post-set valueOf");
+
+  global.value = 2n ** 63n;
+  assert_equals(global.valueOf(), - (2n ** 63n), "overflow");
 }, "i64 mutability");
 
 
