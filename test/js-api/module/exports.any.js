@@ -136,23 +136,24 @@ test(() => {
 }, "Stray argument");
 
 test(() => {
-  const exportingModuleLongIdentityFn = (() => {
-      const builder = new WasmModuleBuilder();
+  const builder = new WasmModuleBuilder();
 
-      builder
-          .addFunction('id', kSig_l_l)
-          .addBody([ kExprGetLocal, 0 ])
-          .exportFunc();
+  builder
+    .addFunction("f", kSig_l_l) // i64 -> i64
+    .addBody([
+      kExprGetLocal, 0x0,
+    ])
+    .exportFunc();
 
-      return builder.toBuffer();
-  })();
+  const module = builder.instantiate();
+  const f = module.exports.f;
 
-  const module = new WebAssembly.Module(exportingModuleLongIdentityFn);
-  const instance = new WebAssembly.Instance(module);
+  assert_equals(f(0n), 0n);
+  assert_equals(f(-0n), -0n);
+  assert_equals(f(123n), 123n);
+  assert_equals(f(-123n), -123n);
 
-  const value = 2n ** 63n;
-  const output = instance.exports.id(value);
-  assert_equals(output, - (2n ** 63n));
-  assertThrows(() => instance.exports.id(5), TypeError);
-  assert_equals(instance.exports.id("5"), 5n);
+  assert_equals(f("5"), 5n);
+
+  assert_throws(() => f(5), TypeError);
 }, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in exported functions");
