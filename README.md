@@ -10,4 +10,4 @@ BigInts can be read or written from WebAssembly memory using the
 BigInt proposal's BigInt64Array or BigUint64Array; no additional
 support is needed.
     
-[Design issue](https://github.com/WebAssembly/design/issues/1186)
+[Design issue](https://github.com/WebAssembly/proposals/issues/7)
