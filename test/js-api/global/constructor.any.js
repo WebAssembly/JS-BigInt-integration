@@ -125,3 +125,8 @@ test(() => {
   const global = new WebAssembly.Global(argument, 0, {});
   assert_Global(global, 0);
 }, "Stray argument");
+
+test(() => {
+  var argument = { "value": "i64" };
+  assert_throws(new TypeError(), () => new WebAssembly.Global(argument, 666));
+}, "Pass non-bigint as i64 Global value");
