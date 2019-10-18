@@ -937,7 +937,7 @@ The algorithm <dfn>ToWebAssemblyValue</dfn>(|v|, |type|) coerce a JavaScript val
 
 
 1. If |type| is [=𝗂𝟨𝟦=],
-    1. Let |i64| be [=ToBigInt64=](|v|).
+    1. Let |i64| be ? [=ToBigInt64=](|v|).
     1. Return [=𝗂𝟨𝟦.𝖼𝗈𝗇𝗌𝗍=] |i64|.
 1. If |type| is [=𝗂𝟥𝟤=],
     1. Let |i32| be ? [=ToInt32=](|v|).
