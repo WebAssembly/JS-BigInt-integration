@@ -879,7 +879,6 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. If |v| is undefined,
         1. let |value| be [=DefaultValue=](|valuetype|).
     1. Otherwise,
-        1. If |valuetype| is [=𝗂𝟨𝟦=], throw a {{TypeError}} exception.
         1. Let |value| be [=ToWebAssemblyValue=](|v|, |valuetype|).
     1. If |mutable| is true, let |globaltype| be [=var=] |valuetype|; otherwise, let |globaltype| be [=const=] |valuetype|.
     1. Let |store| be the current agent's [=associated store=].
@@ -893,7 +892,6 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
     1. Let |globaltype| be [=global_type=](|store|, |globaladdr|).
-    1. If |globaltype| is of the form <var ignore>mut</var> [=𝗂𝟨𝟦=], throw a {{TypeError}}.
     1. Let |value| be [=global_read=](|store|, |globaladdr|).
     1. Return [=ToJSValue=](|value|).
 </div>
@@ -907,7 +905,6 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     1. Let |globaladdr| be **this**.\[[Global]].
     1. Let |globaltype| be [=global_type=](|store|, |globaladdr|), where |globaltype| is of the form |mut| |valuetype|.
     1. If |mut| is [=const=], throw a {{TypeError}}.
-    1. If |valuetype| is [=𝗂𝟨𝟦=], throw a {{TypeError}}.
     1. Let |value| be [=ToWebAssemblyValue=](**the given value**, |valuetype|).
     1. Let |store| be [=global_write=](|store|, |globaladdr|, |value|).
     1. If |store| is [=error=], throw a {{RangeError}} exception.
