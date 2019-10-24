@@ -120,14 +120,14 @@ struct
     | Rotr -> "rotr"
 
   let cvtop xx = function
-    | ExtendSI32 -> "extend_s/i32"
-    | ExtendUI32 -> "extend_u/i32"
-    | WrapI64 -> "wrap/i64"
-    | TruncSF32 -> "trunc_s/f32"
-    | TruncUF32 -> "trunc_u/f32"
-    | TruncSF64 -> "trunc_s/f64"
-    | TruncUF64 -> "trunc_u/f64"
-    | ReinterpretFloat -> "reinterpret/f" ^ xx
+    | ExtendSI32 -> "extend_i32_s"
+    | ExtendUI32 -> "extend_i32_u"
+    | WrapI64 -> "wrap_i64"
+    | TruncSF32 -> "trunc_f32_s"
+    | TruncUF32 -> "trunc_f32_u"
+    | TruncSF64 -> "trunc_f64_s"
+    | TruncUF64 -> "trunc_f64_u"
+    | ReinterpretFloat -> "reinterpret_f" ^ xx
 end
 
 module FloatOp =
@@ -163,13 +163,13 @@ struct
     | CopySign -> "copysign"
 
   let cvtop xx = function
-    | ConvertSI32 -> "convert_s/i32"
-    | ConvertUI32 -> "convert_u/i32"
-    | ConvertSI64 -> "convert_s/i64"
-    | ConvertUI64 -> "convert_u/i64"
-    | PromoteF32 -> "promote/f32"
-    | DemoteF64 -> "demote/f64"
-    | ReinterpretInt -> "reinterpret/i" ^ xx
+    | ConvertSI32 -> "convert_i32_s"
+    | ConvertUI32 -> "convert_i32_u"
+    | ConvertSI64 -> "convert_i64_s"
+    | ConvertUI64 -> "convert_i64_u"
+    | PromoteF32 -> "promote_f32"
+    | DemoteF64 -> "demote_f64"
+    | ReinterpretInt -> "reinterpret_i" ^ xx
 end
 
 let oper (intop, floatop) op =
@@ -196,20 +196,21 @@ let extension = function
   | Memory.SX -> "_s"
   | Memory.ZX -> "_u"
 
-let memop name {ty; align; offset; _} =
+let memop name {ty; align; offset; _} sz =
   value_type ty ^ "." ^ name ^
   (if offset = 0l then "" else " offset=" ^ nat32 offset) ^
-  (if 1 lsl align = size ty then "" else " align=" ^ nat (1 lsl align))
+  (if 1 lsl align = sz then "" else " align=" ^ nat (1 lsl align))
 
 let loadop op =
   match op.sz with
-  | None -> memop "load" op
-  | Some (sz, ext) -> memop ("load" ^ pack_size sz ^ extension ext) op
+  | None -> memop "load" op (size op.ty)
+  | Some (sz, ext) ->
+    memop ("load" ^ pack_size sz ^ extension ext) op (Memory.packed_size sz)
 
 let storeop op =
   match op.sz with
-  | None -> memop "store" op
-  | Some sz -> memop ("store" ^ pack_size sz) op
+  | None -> memop "store" op (size op.ty)
+  | Some sz -> memop ("store" ^ pack_size sz) op (Memory.packed_size sz)
 
 
 (* Expressions *)
@@ -237,11 +238,11 @@ let rec instr e =
     | Return -> "return", []
     | Call x -> "call " ^ var x, []
     | CallIndirect x -> "call_indirect", [Node ("type " ^ var x, [])]
-    | GetLocal x -> "get_local " ^ var x, []
-    | SetLocal x -> "set_local " ^ var x, []
-    | TeeLocal x -> "tee_local " ^ var x, []
-    | GetGlobal x -> "get_global " ^ var x, []
-    | SetGlobal x -> "set_global " ^ var x, []
+    | LocalGet x -> "local.get " ^ var x, []
+    | LocalSet x -> "local.set " ^ var x, []
+    | LocalTee x -> "local.tee " ^ var x, []
+    | GlobalGet x -> "global.get " ^ var x, []
+    | GlobalSet x -> "global.set " ^ var x, []
     | Load op -> loadop op, []
     | Store op -> storeop op, []
     | MemorySize -> "memory.size", []
@@ -305,18 +306,21 @@ let data seg =
 let typedef i ty =
   Node ("type $" ^ nat i, [struct_type ty.it])
 
-let import_desc i d =
+let import_desc fx tx mx gx d =
   match d.it with
   | FuncImport x ->
-    Node ("func $" ^ nat i, [Node ("type", [atom var x])])
-  | TableImport t -> table 0 i ({ttype = t} @@ d.at)
-  | MemoryImport t -> memory 0 i ({mtype = t} @@ d.at)
-  | GlobalImport t -> Node ("global $" ^ nat i, [global_type t])
+    incr fx; Node ("func $" ^ nat (!fx - 1), [Node ("type", [atom var x])])
+  | TableImport t ->
+    incr tx; table 0 (!tx - 1) ({ttype = t} @@ d.at)
+  | MemoryImport t ->
+    incr mx; memory 0 (!mx - 1) ({mtype = t} @@ d.at)
+  | GlobalImport t ->
+    incr gx; Node ("global $" ^ nat (!gx - 1), [global_type t])
 
-let import i im =
+let import fx tx mx gx im =
   let {module_name; item_name; idesc} = im.it in
   Node ("import",
-    [atom name module_name; atom name item_name; import_desc i idesc]
+    [atom name module_name; atom name item_name; import_desc fx tx mx gx idesc]
   )
 
 let export_desc d =
@@ -341,30 +345,19 @@ let var_opt = function
   | None -> ""
   | Some x -> " " ^ x.it
 
-let is_func_import im =
-  match im.it.idesc.it with FuncImport _ -> true | _ -> false
-let is_table_import im =
-  match im.it.idesc.it with TableImport _ -> true | _ -> false
-let is_memory_import im =
-  match im.it.idesc.it with MemoryImport _ -> true | _ -> false
-let is_global_import im =
-  match im.it.idesc.it with GlobalImport _ -> true | _ -> false
-
 let module_with_var_opt x_opt m =
-  let func_imports = List.filter is_func_import m.it.imports in
-  let table_imports = List.filter is_table_import m.it.imports in
-  let memory_imports = List.filter is_memory_import m.it.imports in
-  let global_imports = List.filter is_global_import m.it.imports in
+  let fx = ref 0 in
+  let tx = ref 0 in
+  let mx = ref 0 in
+  let gx = ref 0 in
+  let imports = list (import fx tx mx gx) m.it.imports in
   Node ("module" ^ var_opt x_opt,
     listi typedef m.it.types @
-    listi import table_imports @
-    listi import memory_imports @
-    listi import global_imports @
-    listi import func_imports @
-    listi (table (List.length table_imports)) m.it.tables @
-    listi (memory (List.length memory_imports)) m.it.memories @
-    listi (global (List.length global_imports)) m.it.globals @
-    listi (func_with_index (List.length func_imports)) m.it.funcs @
+    imports @
+    listi (table !tx) m.it.tables @
+    listi (memory !mx) m.it.memories @
+    listi (global !gx) m.it.globals @
+    listi (func_with_index !fx) m.it.funcs @
     list export m.it.exports @
     opt start m.it.start @
     list elems m.it.elems @
@@ -391,23 +384,26 @@ let literal lit =
 
 let definition mode x_opt def =
   try
-    match mode, def.it with
-    | `Textual, _ | `Original, Textual _ ->
+    match mode with
+    | `Textual ->
       let rec unquote def =
         match def.it with
         | Textual m -> m
         | Encoded (_, bs) -> Decode.decode "" bs
         | Quoted (_, s) -> unquote (Parse.string_to_module s)
       in module_with_var_opt x_opt (unquote def)
-    | `Binary, _ | `Original, Encoded _ ->
+    | `Binary ->
       let rec unquote def =
         match def.it with
         | Textual m -> Encode.encode m
-        | Encoded (_, bs) -> bs
+        | Encoded (_, bs) -> Encode.encode (Decode.decode "" bs)
         | Quoted (_, s) -> unquote (Parse.string_to_module s)
       in binary_module_with_var_opt x_opt (unquote def)
-    | `Original, Quoted (_, s) ->
-      quoted_module_with_var_opt x_opt s
+    | `Original ->
+      match def.it with
+      | Textual m -> module_with_var_opt x_opt m
+      | Encoded (_, bs) -> binary_module_with_var_opt x_opt bs
+      | Quoted (_, s) -> quoted_module_with_var_opt x_opt s
   with Parse.Syntax _ ->
     quoted_module_with_var_opt x_opt "<invalid module>"
 

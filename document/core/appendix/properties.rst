@@ -218,17 +218,17 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 
   * Or the :ref:`external value <syntax-externval>` :math:`\EVFUNC~\X{fa}` must be :ref:`valid <valid-externval-func>` with some :ref:`external type <syntax-externtype>` :math:`\ETFUNC~\X{ft}`.
 
-* The :ref:`limits <syntax-limits>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-limits>`.
+* The :ref:`limits <syntax-limits>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-limits>` within range :math:`2^{32}`.
 
-* Then the table instance is valid with :ref:`table type <syntax-tabletype>` :math:`\{\LMIN~n, \LMAX~m^?\}~\ANYFUNC`.
+* Then the table instance is valid with :ref:`table type <syntax-tabletype>` :math:`\{\LMIN~n, \LMAX~m^?\}~\FUNCREF`.
 
 .. math::
    \frac{
      ((S \vdash \EVFUNC~\X{fa} : \ETFUNC~\functype)^?)^n
      \qquad
-     \vdashlimits \{\LMIN~n, \LMAX~m^?\} \ok
+     \vdashlimits \{\LMIN~n, \LMAX~m^?\} : 2^{32}
    }{
-     S \vdashtableinst \{ \TIELEM~(\X{fa}^?)^n, \TIMAX~m^? \} : \{\LMIN~n, \LMAX~m^?\}~\ANYFUNC
+     S \vdashtableinst \{ \TIELEM~(\X{fa}^?)^n, \TIMAX~m^? \} : \{\LMIN~n, \LMAX~m^?\}~\FUNCREF
    }
 
 
@@ -238,13 +238,13 @@ Module instances are classified by *module contexts*, which are regular :ref:`co
 :ref:`Memory Instances <syntax-meminst>` :math:`\{ \MIDATA~b^n, \MIMAX~m^? \}`
 ..............................................................................
 
-* The :ref:`limits <syntax-limits>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-limits>`.
+* The :ref:`limits <syntax-limits>` :math:`\{\LMIN~n, \LMAX~m^?\}` must be :ref:`valid <valid-limits>` within range :math:`2^{16}`.
 
 * Then the memory instance is valid with :ref:`memory type <syntax-memtype>` :math:`\{\LMIN~n, \LMAX~m^?\}`.
 
 .. math::
    \frac{
-     \vdashlimits \{\LMIN~n, \LMAX~m^?\} \ok
+     \vdashlimits \{\LMIN~n, \LMAX~m^?\} : 2^{16}
    }{
      S \vdashmeminst \{ \MIDATA~b^n, \MIMAX~m^? \} : \{\LMIN~n, \LMAX~m^?\}
    }
@@ -490,7 +490,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 :math:`\INITELEM~\tableaddr~o~x^n`
 ..................................
 
-* The :ref:`external table value <syntax-externval>` :math:`\EVTABLE~\tableaddr` must be :ref:`valid <valid-externval-table>` with some :ref:`external table type <syntax-externtype>` :math:`\ETTABLE~\limits~\ANYFUNC`.
+* The :ref:`external table value <syntax-externval>` :math:`\EVTABLE~\tableaddr` must be :ref:`valid <valid-externval-table>` with some :ref:`external table type <syntax-externtype>` :math:`\ETTABLE~\limits~\FUNCREF`.
 
 * The index :math:`o + n` must be smaller than or equal to :math:`\limits.\LMIN`.
 
@@ -502,7 +502,7 @@ To that end, all previous typing judgements :math:`C \vdash \X{prop}` are genera
 
 .. math::
    \frac{
-     S \vdashexternval \EVTABLE~\tableaddr : \ETTABLE~\limits~\ANYFUNC
+     S \vdashexternval \EVTABLE~\tableaddr : \ETTABLE~\limits~\FUNCREF
      \qquad
      o + n \leq \limits.\LMIN
      \qquad
