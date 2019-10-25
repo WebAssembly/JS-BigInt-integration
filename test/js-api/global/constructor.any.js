@@ -90,8 +90,7 @@ test(() => {
 test(() => {
   const argument = { "value": "i64" };
   const global = new WebAssembly.Global(argument);
-  assert_throws(new TypeError(), () => global.value);
-  assert_throws(new TypeError(), () => global.valueOf());
+  assert_Global(global, 0n);
 }, "i64 with default");
 
 for (const type of ["i32", "f32", "f64"]) {
@@ -118,6 +117,41 @@ for (const type of ["i32", "f32", "f64"]) {
       assert_Global(global, expected);
     }, `Explicit value ${name} for type ${type}`);
   }
+
+  test(() => {
+    const argument = { "value": type };
+    assert_throws(new TypeError(), () => new WebAssembly.Global(argument, 0n));
+  }, `BigInt value for type ${type}`);
+}
+
+const valueArguments = [
+  [undefined, 0n],
+  [true, 1n],
+  [false, 0n],
+  ["3", 3n],
+  [{ toString() { return "5" } }, 5n, "object with toString"],
+  [{ valueOf() { return "8" } }, 8n, "object with valueOf"],
+];
+for (const [value, expected, name = format_value(value)] of valueArguments) {
+  test(() => {
+    const argument = { "value": "i64" };
+    const global = new WebAssembly.Global(argument, value);
+    assert_Global(global, expected);
+  }, `Explicit value ${name} for type i64`);
+}
+
+const invalidBigints = [
+  null,
+  666,
+  { toString() { return 5 } },
+  { valueOf() { return 8 } },
+  Symbol(),
+];
+for (const invalidBigint of invalidBigints) {
+  test(() => {
+    var argument = { "value": "i64" };
+    assert_throws(new TypeError(), () => new WebAssembly.Global(argument, invalidBigint));
+  }, `Pass non-bigint as i64 Global value: ${format_value(invalidBigint)}`);
 }
 
 test(() => {
@@ -125,8 +159,3 @@ test(() => {
   const global = new WebAssembly.Global(argument, 0, {});
   assert_Global(global, 0);
 }, "Stray argument");
-
-test(() => {
-  var argument = { "value": "i64" };
-  assert_throws(new TypeError(), () => new WebAssembly.Global(argument, 666));
-}, "Pass non-bigint as i64 Global value");
