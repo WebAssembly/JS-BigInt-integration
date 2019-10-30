@@ -166,7 +166,7 @@ test(() => {
   builder.instantiate({
     a: {
       a(param) {
-        assert_equals(x.constructor, BigInt);
+        assert_equals(param.constructor, BigInt);
         assert_equals(param, 1n);
       },
     }
