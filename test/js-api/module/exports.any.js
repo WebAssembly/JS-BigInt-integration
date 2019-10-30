@@ -150,5 +150,5 @@ test(() => {
 
   assert_equals(f("5"), 5n);
 
-  assert_throws(() => f(5), TypeError);
+  assert_throws(new TypeError(), () => f(5));
 }, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in exported functions");
