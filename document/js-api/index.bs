@@ -86,7 +86,7 @@ urlPrefix: https://tc39.github.io/ecma262/; spec: ECMASCRIPT
         text: NumberToRawBytes; url: sec-numbertorawbytes
         text: Built-in Function Objects; url: sec-built-in-function-objects
         text: NativeError Object Structure; url: sec-nativeerror-object-structure
-        text: ToBigInt64; url: #sec-to-big-int64
+        text: ToBigInt64; url: #sec-tobigint64
         text: BigInt; url: #sec-ecmascript-language-types-bigint-type
     type: abstract-op
         text: CreateMethodProperty; url: sec-createmethodproperty
