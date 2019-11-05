@@ -891,7 +891,6 @@ which can be simultaneously referenced by multiple {{Instance}} objects. Each
     The algorithm <dfn>GetGlobalValue</dfn>({{Global}} |global|) performs the following steps:
     1. Let |store| be the current agent's [=associated store=].
     1. Let |globaladdr| be |global|.\[[Global]].
-    1. Let |globaltype| be [=global_type=](|store|, |globaladdr|).
     1. Let |value| be [=global_read=](|store|, |globaladdr|).
     1. Return [=ToJSValue=](|value|).
 </div>
@@ -986,7 +985,7 @@ Note: Exported Functions do not have a \[[Construct]] method and thus it is not 
 <div algorithm>
   To <dfn>run a host function</dfn> from the JavaScript object |func|, type |functype|, and [=list=] of [=WebAssembly values=] |arguments|, perform the following steps:
 
-    1. Let [|parameters|] → [|results|] be |functype|.
+    1. Let [<var ignore>parameters</var>] → [|results|] be |functype|.
     1. Assert: |results|'s [=list/size=] is at most one.
     1. Let |jsArguments| be an empty [=list=].
     1. For each |arg| in |arguments|,
