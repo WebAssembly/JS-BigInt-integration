@@ -11,6 +11,16 @@
  * (if any) yields the correct error.
  */
 function test_bad_imports(t) {
+  function value_type(type) {
+    switch (type) {
+      case "i32": return kWasmI32;
+      case "i64": return kWasmI64;
+      case "f32": return kWasmF32;
+      case "f64": return kWasmF64;
+      default: throw new TypeError(`Unexpected type ${type}`);
+    }
+  }
+
   for (const value of [null, true, "", Symbol(), 1, 0.1, NaN]) {
     t(`Non-object imports argument: ${format_value(value)}`,
       new TypeError(),
@@ -45,17 +55,6 @@ function test_bad_imports(t) {
       value);
   }
 
-  t(`Importing an i64 global`,
-    new WebAssembly.LinkError(),
-    builder => {
-      builder.addImportedGlobal("module", "global", kWasmI64);
-    },
-    {
-      "module": {
-        "global": 0,
-      },
-    });
-
   for (const value of [undefined, null, true, "", Symbol(), 1, 0.1, NaN, {}]) {
     t(`Importing a function with an incorrectly-typed value: ${format_value(value)}`,
       new WebAssembly.LinkError(),
@@ -81,17 +80,22 @@ function test_bad_imports(t) {
     [Object.create(WebAssembly.Global.prototype), "Object.create(WebAssembly.Global.prototype)"],
   ];
 
-  for (const [value, name = format_value(value)] of nonGlobals) {
-    t(`Importing a global with an incorrectly-typed value: ${name}`,
-      new WebAssembly.LinkError(),
-      builder => {
-        builder.addImportedGlobal("module", "global", kWasmI32);
-      },
-      {
-        "module": {
-          "global": value,
+  for (const type of ["i32", "i64", "f32", "f64"]) {
+    const extendedNonGlobals = nonGlobals.concat([
+      type === "i64" ? [0, "Number"] : [0n, "BigInt"]
+    ]);
+    for (const [value, name = format_value(value)] of extendedNonGlobals) {
+      t(`Importing an ${type} global with an incorrectly-typed value: ${name}`,
+        new WebAssembly.LinkError(),
+        builder => {
+          builder.addImportedGlobal("module", "global", value_type(type));
         },
-      });
+        {
+          "module": {
+            "global": value,
+          },
+        });
+    }
   }
 
   const nonMemories = [
