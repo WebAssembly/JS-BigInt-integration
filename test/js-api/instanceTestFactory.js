@@ -254,7 +254,7 @@ const instanceTestFactory = [
       const builder = new WasmModuleBuilder();
 
       const fnIndex = builder.addImport("module", "fn", kSig_i_v);
-      builder
+      const fn2 = builder
         .addFunction("fn2", kSig_v_v)
         .addBody([
             kExprCallFunction,
@@ -275,7 +275,9 @@ const instanceTestFactory = [
       return {
         buffer,
         args: [imports],
-        exports: {},
+        exports: {
+          "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
+        },
         verify: instance => assert_throws(new TypeError(), () => instance.exports.fn2())
       };
     }
@@ -287,7 +289,7 @@ const instanceTestFactory = [
       const builder = new WasmModuleBuilder();
 
       const fnIndex = builder.addImport("module", "fn", kSig_l_v);
-      builder
+      const fn2 = builder
         .addFunction("fn2", kSig_v_v)
         .addBody([
             kExprCallFunction,
@@ -308,7 +310,9 @@ const instanceTestFactory = [
       return {
         buffer,
         args: [imports],
-        exports: {},
+        exports: {
+          "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
+        },
         verify: instance => assert_throws(new TypeError(), () => instance.exports.fn2())
       };
     }
@@ -319,7 +323,7 @@ const instanceTestFactory = [
     function() {
       const builder = new WasmModuleBuilder();
 
-      builder
+      const fn = builder
         .addFunction("fn", kSig_v_i)
         .addBody([
             kExprReturn,
@@ -331,7 +335,9 @@ const instanceTestFactory = [
       return {
         buffer,
         args: [],
-        exports: {},
+        exports: {
+          "fn": { "kind": "function", "name": String(fn.index), "length": 1 },
+        },
         verify: instance => assert_throws(new TypeError(), () => instance.exports.fn(6n))
       };
     }
@@ -342,7 +348,7 @@ const instanceTestFactory = [
     function() {
       const builder = new WasmModuleBuilder();
 
-      builder
+      const fn = builder
         .addFunction("fn", kSig_v_l)
         .addBody([
             kExprReturn,
@@ -354,7 +360,9 @@ const instanceTestFactory = [
       return {
         buffer,
         args: [],
-        exports: {},
+        exports: {
+          "fn": { "kind": "function", "name": String(fn.index), "length": 1 },
+        },
         verify: instance => assert_throws(new TypeError(), () => instance.exports.fn(6))
       };
     }
@@ -365,7 +373,7 @@ const instanceTestFactory = [
     function() {
       const builder = new WasmModuleBuilder();
 
-      builder
+      const fn = builder
         .addFunction("fn", kSig_l_v)
         .addBody([
             kExprI64Const, 0x66,
@@ -378,7 +386,9 @@ const instanceTestFactory = [
       return {
         buffer,
         args: [],
-        exports: {},
+        exports: {
+          "fn": { "kind": "function", "name": String(fn.index), "length": 0 },
+        },
         verify: instance => assert_equals(instance.exports.fn(), -26n)
       };
     }
