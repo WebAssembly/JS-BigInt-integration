@@ -107,8 +107,10 @@ for (const type of ["i32", "f32", "f64"]) {
     [false, 0],
     [2, 2],
     ["3", 3],
-    [{ toString() { return "5" } }, 5, "object with toString"],
-    [{ valueOf() { return "8" } }, 8, "object with valueOf"],
+    [{ toString() { return "5" } }, 5, "object with toString returning string"],
+    [{ valueOf() { return "8" } }, 8, "object with valueOf returning string"],
+    [{ toString() { return 6 } }, 6, "object with toString returning number"],
+    [{ valueOf() { return 9 } }, 9, "object with valueOf returning number"],
   ];
   for (const [value, expected, name = format_value(value)] of valueArguments) {
     test(() => {
@@ -129,8 +131,10 @@ const valueArguments = [
   [true, 1n],
   [false, 0n],
   ["3", 3n],
-  [{ toString() { return "5" } }, 5n, "object with toString"],
-  [{ valueOf() { return "8" } }, 8n, "object with valueOf"],
+  [{ toString() { return "5" } }, 5n, "object with toString returning string"],
+  [{ valueOf() { return "8" } }, 8n, "object with valueOf returning string"],
+  [{ toString() { return 6n } }, 6n, "object with toString returning bigint"],
+  [{ valueOf() { return 9n } }, 9n, "object with valueOf returning bigint"],
 ];
 for (const [value, expected, name = format_value(value)] of valueArguments) {
   test(() => {
