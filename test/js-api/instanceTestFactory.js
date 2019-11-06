@@ -361,6 +361,30 @@ const instanceTestFactory = [
   ],
 
   [
+    "export i64-returning function",
+    function() {
+      const builder = new WasmModuleBuilder();
+
+      builder
+        .addFunction("fn", kSig_l_v)
+        .addBody([
+            kExprI64Const, 0x66,
+            kExprReturn,
+        ])
+        .exportFunc();
+
+      const buffer = builder.toBuffer();
+
+      return {
+        buffer,
+        args: [],
+        exports: {},
+        verify: instance => assert_equals(instance.exports.fn(), -26n)
+      };
+    }
+  ],
+
+  [
     "stray argument",
     function() {
       return {
