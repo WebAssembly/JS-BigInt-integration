@@ -98,6 +98,32 @@ function test_bad_imports(t) {
     }
   }
 
+  for (const type of ["i32", "i64", "f32", "f64"]) {
+    const value = type === "i64" ? 0n : 0;
+    t(`Importing an ${type} mutable global with a primitive value`,
+      new WebAssembly.LinkError(),
+      builder => {
+        builder.addImportedGlobal("module", "global", value_type(type), true);
+      },
+      {
+        "module": {
+          "global": value,
+        },
+      });
+
+    const global = new WebAssembly.Global({ "value": type }, value);
+    t(`Importing an ${type} mutable global with an immutable Global object`,
+      new WebAssembly.LinkError(),
+      builder => {
+        builder.addImportedGlobal("module", "global", value_type(type), true);
+      },
+      {
+        "module": {
+          "global": global,
+        },
+      });
+  }
+
   const nonMemories = [
     [undefined],
     [null],
