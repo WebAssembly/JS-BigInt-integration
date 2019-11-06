@@ -264,9 +264,12 @@ const instanceTestFactory = [
         .exportFunc();
 
       const buffer = builder.toBuffer();
+
+      let called = false;
       const imports = {
         "module": {
           "fn": function() {
+            called = true;
             return 6n;
           },
         },
@@ -278,7 +281,10 @@ const instanceTestFactory = [
         exports: {
           "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
         },
-        verify: instance => assert_throws(new TypeError(), () => instance.exports.fn2())
+        verify: instance => {
+          assert_throws(new TypeError(), () => instance.exports.fn2());
+          assert_true(called, "Should have called into JS");
+        }
       };
     }
   ],
@@ -299,9 +305,12 @@ const instanceTestFactory = [
         .exportFunc();
 
       const buffer = builder.toBuffer();
+
+      let called = false;
       const imports = {
         "module": {
           "fn": function() {
+            called = true;
             return 6;
           },
         },
@@ -313,7 +322,10 @@ const instanceTestFactory = [
         exports: {
           "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
         },
-        verify: instance => assert_throws(new TypeError(), () => instance.exports.fn2())
+        verify: instance => {
+          assert_throws(new TypeError(), () => instance.exports.fn2());
+          assert_true(called, "Should have called into JS");
+        }
       };
     }
   ],
