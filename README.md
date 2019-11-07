@@ -11,3 +11,4 @@ BigInt proposal's BigInt64Array or BigUint64Array; no additional
 support is needed.
     
 [Design issue](https://github.com/WebAssembly/proposals/issues/7)
+[Rendered spec](https://webassembly.github.io/JS-BigInt-integration)
