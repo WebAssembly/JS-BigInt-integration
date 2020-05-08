@@ -1,4 +1,4 @@
-This directory contains the WebAssembly test suite. It is split into three
+This directory contains the WebAssembly test suite. It is split into two
 directories:
 
 * [`core/`](core/), tests for the core semantics

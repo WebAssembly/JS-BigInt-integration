@@ -5,7 +5,7 @@
  *
  *   x : var
  *   v : value
- *   e : instr
+ *   e : instrr
  *   f : func
  *   m : module_
  *
