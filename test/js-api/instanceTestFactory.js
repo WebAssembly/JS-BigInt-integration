@@ -227,16 +227,21 @@ const instanceTestFactory = [
         ])
         .exportFunc();
 
+      const index2 = builder.addImportedGlobal("module", "global2", kWasmI64);
+      builder.addExportOfKind("global", kExternalGlobal, index2);
+
       const buffer = builder.toBuffer();
 
       const imports = {
         "module": {
           "global": value,
+          "global2": 2n ** 63n,
         },
       };
 
       const exports = {
         "fn": { "kind": "function", "name": "0", "length": 0 },
+        "global": { "kind": "global", "value": -(2n ** 63n) },
       };
 
       return {
@@ -583,9 +588,6 @@ const instanceTestFactory = [
   [
     "Multiple i64 arguments",
     function() {
-      const initial = 102n;
-      const value = new WebAssembly.Global({ "value": "i64", "mutable": true }, initial);
-
       const builder = new WasmModuleBuilder();
 
       const fn = builder

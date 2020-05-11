@@ -129,26 +129,3 @@ test(() => {
   const exports = WebAssembly.Module.exports(module, {});
   assert_exports(exports, []);
 }, "Stray argument");
-
-test(() => {
-  const builder = new WasmModuleBuilder();
-
-  builder
-    .addFunction("f", kSig_l_l) // i64 -> i64
-    .addBody([
-      kExprLocalGet, 0x0,
-    ])
-    .exportFunc();
-
-  const module = builder.instantiate();
-  const f = module.exports.f;
-
-  assert_equals(f(0n), 0n);
-  assert_equals(f(-0n), -0n);
-  assert_equals(f(123n), 123n);
-  assert_equals(f(-123n), -123n);
-
-  assert_equals(f("5"), 5n);
-
-  assert_throws_js(TypeError, () => f(5));
-}, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in exported functions");

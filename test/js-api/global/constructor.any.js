@@ -131,6 +131,7 @@ const valueArguments = [
   [true, 1n],
   [false, 0n],
   ["3", 3n],
+  [123n, 123n],
   [{ toString() { return "5" } }, 5n, "object with toString returning string"],
   [{ valueOf() { return "8" } }, 8n, "object with valueOf returning string"],
   [{ toString() { return 6n } }, 6n, "object with toString returning bigint"],
