@@ -1,4 +1,4 @@
-// META: global=jsshell
+// META: global=window,dedicatedworker,jsshell
 // META: script=/wasm/jsapi/wasm-module-builder.js
 
 let emptyModuleBinary;
@@ -35,7 +35,7 @@ function assert_exports(exports, expected) {
 }
 
 test(() => {
-  assert_throws(new TypeError(), () => WebAssembly.Module.exports());
+  assert_throws_js(TypeError, () => WebAssembly.Module.exports());
 }, "Missing arguments");
 
 test(() => {
@@ -51,8 +51,8 @@ test(() => {
     WebAssembly.Module.prototype,
   ];
   for (const argument of invalidArguments) {
-    assert_throws(new TypeError(), () => WebAssembly.Module.exports(argument),
-                  `exports(${format_value(argument)})`);
+    assert_throws_js(TypeError, () => WebAssembly.Module.exports(argument),
+                     `exports(${format_value(argument)})`);
   }
 }, "Non-Module arguments");
 
@@ -136,7 +136,7 @@ test(() => {
   builder
     .addFunction("f", kSig_l_l) // i64 -> i64
     .addBody([
-      kExprGetLocal, 0x0,
+      kExprLocalGet, 0x0,
     ])
     .exportFunc();
 
@@ -150,5 +150,5 @@ test(() => {
 
   assert_equals(f("5"), 5n);
 
-  assert_throws(new TypeError(), () => f(5));
+  assert_throws_js(TypeError, () => f(5));
 }, "WebAssembly longs are converted to JavaScript as if by ToBigInt64 in exported functions");

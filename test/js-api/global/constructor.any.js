@@ -1,4 +1,4 @@
-// META: global=jsshell
+// META: global=window,dedicatedworker,jsshell
 // META: script=/wasm/jsapi/assertions.js
 
 function assert_Global(actual, expected) {
@@ -19,12 +19,12 @@ test(() => {
 }, "length");
 
 test(() => {
-  assert_throws(new TypeError(), () => new WebAssembly.Global());
+  assert_throws_js(TypeError, () => new WebAssembly.Global());
 }, "No arguments");
 
 test(() => {
   const argument = { "value": "i32" };
-  assert_throws(new TypeError(), () => WebAssembly.Global(argument));
+  assert_throws_js(TypeError, () => WebAssembly.Global(argument));
 }, "Calling");
 
 test(() => {
@@ -73,9 +73,9 @@ test(() => {
     {},
   ];
   for (const invalidArgument of invalidArguments) {
-    assert_throws(new TypeError(),
-                  () => new WebAssembly.Global(invalidArgument),
-                  `new Global(${format_value(invalidArgument)})`);
+    assert_throws_js(TypeError,
+                     () => new WebAssembly.Global(invalidArgument),
+                     `new Global(${format_value(invalidArgument)})`);
   }
 }, "Invalid descriptor argument");
 
@@ -83,7 +83,7 @@ test(() => {
   const invalidTypes = ["i16", "i128", "f16", "f128", "u32", "u64", "i32\0"];
   for (const value of invalidTypes) {
     const argument = { value };
-    assert_throws(new TypeError(), () => new WebAssembly.Global(argument));
+    assert_throws_js(TypeError, () => new WebAssembly.Global(argument));
   }
 }, "Invalid type argument");
 
@@ -122,7 +122,7 @@ for (const type of ["i32", "f32", "f64"]) {
 
   test(() => {
     const argument = { "value": type };
-    assert_throws(new TypeError(), () => new WebAssembly.Global(argument, 0n));
+    assert_throws_js(TypeError, () => new WebAssembly.Global(argument, 0n));
   }, `BigInt value for type ${type}`);
 }
 
@@ -154,7 +154,7 @@ const invalidBigints = [
 for (const invalidBigint of invalidBigints) {
   test(() => {
     var argument = { "value": "i64" };
-    assert_throws(new TypeError(), () => new WebAssembly.Global(argument, invalidBigint));
+    assert_throws_js(TypeError, () => new WebAssembly.Global(argument, invalidBigint));
   }, `Pass non-bigint as i64 Global value: ${format_value(invalidBigint)}`);
 }
 

@@ -183,7 +183,7 @@ const instanceTestFactory = [
       builder
         .addFunction("fn", kSig_i_v)
         .addBody([
-            kExprGetGlobal,
+            kExprGlobalGet,
             index,
             kExprReturn,
         ])
@@ -221,7 +221,7 @@ const instanceTestFactory = [
       builder
         .addFunction("fn", kSig_l_v)
         .addBody([
-            kExprGetGlobal,
+            kExprGlobalGet,
             index,
             kExprReturn,
         ])
@@ -282,7 +282,7 @@ const instanceTestFactory = [
           "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
         },
         verify: instance => {
-          assert_throws(new TypeError(), () => instance.exports.fn2());
+          assert_throws_js(TypeError, () => instance.exports.fn2());
           assert_true(called, "Should have called into JS");
         }
       };
@@ -366,7 +366,7 @@ const instanceTestFactory = [
           "fn2": { "kind": "function", "name": String(fn2.index), "length": 0 },
         },
         verify: instance => {
-          assert_throws(new TypeError(), () => instance.exports.fn2());
+          assert_throws_js(TypeError, () => instance.exports.fn2());
           assert_true(called, "Should have called into JS");
         }
       };
@@ -436,7 +436,7 @@ const instanceTestFactory = [
         exports: {
           "fn": { "kind": "function", "name": String(fn.index), "length": 1 },
         },
-        verify: instance => assert_throws(new TypeError(), () => instance.exports.fn(6n))
+        verify: instance => assert_throws_js(TypeError, () => instance.exports.fn(6n))
       };
     }
   ],
@@ -461,7 +461,7 @@ const instanceTestFactory = [
         exports: {
           "fn": { "kind": "function", "name": String(fn.index), "length": 1 },
         },
-        verify: instance => assert_throws(new TypeError(), () => instance.exports.fn(6))
+        verify: instance => assert_throws_js(TypeError, () => instance.exports.fn(6))
       };
     }
   ],
@@ -504,7 +504,7 @@ const instanceTestFactory = [
       const fn = builder
         .addFunction("fn", kSig_i_v)
         .addBody([
-            kExprGetGlobal,
+            kExprGlobalGet,
             index,
             kExprReturn,
         ])
@@ -548,7 +548,7 @@ const instanceTestFactory = [
       const fn = builder
         .addFunction("fn", kSig_l_v)
         .addBody([
-            kExprGetGlobal,
+            kExprGlobalGet,
             index,
             kExprReturn,
         ])
@@ -591,7 +591,7 @@ const instanceTestFactory = [
       const fn = builder
           .addFunction("fn", kSig_l_ll)
           .addBody([
-              kExprGetLocal, 1,
+              kExprLocalGet, 1,
           ])
           .exportFunc();
 
@@ -611,7 +611,7 @@ const instanceTestFactory = [
           assert_equals(fn(1n, 123n), 123n);
           assert_equals(fn(1n, -123n), -123n);
           assert_equals(fn(1n, "5"), 5n);
-          assert_throws(new TypeError(), () => fn(1n, 5));
+          assert_throws_js(TypeError, () => fn(1n, 5));
         }
       };
     }
