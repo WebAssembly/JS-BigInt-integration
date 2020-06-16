@@ -1,5 +1,7 @@
 # WebAssembly BigInt<->i64 conversion in JS API
 
+**This proposal has been merged into the [main specification](https://webassembly.github.io/spec/js-api/).**
+
 With the changes in this repository, BigInts have support for bidirectionally converting
 to 64-bit integer WebAssembly values, which appears as
 - Parameters and return values to exported WebAssembly functions
